@@ -5,11 +5,11 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  Share,
   Platform,
   PermissionsAndroid,
 } from 'react-native';
 import ViewShot from 'react-native-view-shot';
+import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
 
 const CreateScreenShot = ({ 
@@ -48,27 +48,24 @@ const CreateScreenShot = ({
           return;
         }
       }
-
+  
       // Capture the view as an image
       const uri = await viewShotRef.current.capture();
-      
-      // For Android, save to temporary directory
-      const shareableUri = Platform.OS === 'android' 
-        ? `file://${uri}`
-        : uri;
-
-      // Share the image
-      await Share.share({
-        url: shareableUri,
+  
+      const shareOptions = {
         title: 'Game Score',
         message: `Check out my score! ${playerName}: ${score}`,
-      });
-
+        url: uri, // Use the captured image
+        type: 'image/png',
+      };
+  
+      await Share.open(shareOptions);
+  
       if (onShare) {
         onShare('success');
       }
-
-      // Clean up temporary file
+  
+      // Clean up temporary file (for Android)
       if (Platform.OS === 'android') {
         try {
           await RNFS.unlink(uri);
